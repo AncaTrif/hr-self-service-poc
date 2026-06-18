@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acme Corp — HR Self-Service (PoC Demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF8F4;
+    --paper-raised: #FFFFFF;
+    --ink: #1F2A24;
+    --ink-soft: #5B655F;
+    --ink-faint: #94998F;
+    --sage: #5C7C6B;
+    --sage-light: #E4ECE6;
+    --sage-dark: #3E5849;
+    --coral: #C2542F;
+    --coral-dark: #9A3F22;
+    --line: #E2DDD3;
+    --line-soft: #ECE8DF;
+    --warn-bg: #FBEFE6;
+    --warn-text: #8A4A1F;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .topbar {
+    border-bottom: 1px solid var(--line);
+    background: var(--paper-raised);
+    padding: 0.9rem 1.5rem;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .topbar-brand {
+    font-family: 'Source Serif 4', serif;
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .topbar-tag {
+    font-size: 12.5px;
+    color: var(--ink-faint);
+  }
+
+  .demo-banner {
+    background: var(--warn-bg);
+    color: var(--warn-text);
+    font-size: 13px;
+    text-align: center;
+    padding: 0.55rem 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .demo-banner strong { font-weight: 600; }
+
+  .layout {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 1.75rem 1.5rem 3rem;
+  }
+
+  .panel {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+
+  .gate-panel {
+    padding: 2rem 1.75rem;
+    text-align: center;
+  }
+
+  .gate-eyebrow {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    margin: 0 0 0.5rem;
+  }
+
+  .gate-title {
+    font-family: 'Source Serif 4', serif;
+    font-size: 21px;
+    font-weight: 500;
+    margin: 0 0 0.5rem;
+  }
+
+  .gate-sub {
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin: 0 0 1.5rem;
+    line-height: 1.55;
+  }
+
+  .gate-form {
+    display: flex;
+    gap: 0.6rem;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+
+  .gate-form input {
+    flex: 1;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 0.6rem 0.75rem;
+    font-family: inherit;
+    font-size: 14.5px;
+    background: var(--paper);
+    color: var(--ink);
+    text-align: center;
+  }
+
+  .gate-form input:focus {
+    outline: none;
+    border-color: var(--sage);
+    box-shadow: 0 0 0 3px var(--sage-light);
+  }
+
+  .gate-form button {
+    border: none;
+    background: var(--sage);
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 0 1.2rem;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .gate-form button:hover { background: var(--sage-dark); }
+
+  .gate-hint {
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    margin-top: 1rem;
+  }
+
+  .gate-hint button {
+    border: none;
+    background: none;
+    color: var(--sage-dark);
+    font-family: inherit;
+    font-size: 12.5px;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .chat-panel {
+    display: flex;
+    flex-direction: column;
+    height: 600px;
+  }
+
+  .chat-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .chat-header-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--sage);
+    flex-shrink: 0;
+  }
+
+  .chat-header-text {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .chat-header-sub {
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    margin-left: auto;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .msg {
+    max-width: 78%;
+    padding: 0.65rem 0.9rem;
+    border-radius: 10px;
+    font-size: 14.5px;
+    line-height: 1.55;
+  }
+
+  .msg.user {
+    align-self: flex-end;
+    background: var(--sage);
+    color: #fff;
+    border-bottom-right-radius: 3px;
+  }
+
+  .msg.agent {
+    align-self: flex-start;
+    background: var(--sage-light);
+    color: var(--ink);
+    border-bottom-left-radius: 3px;
+  }
+
+  .msg.system {
+    align-self: center;
+    background: transparent;
+    color: var(--ink-faint);
+    font-size: 12.5px;
+    text-align: center;
+    max-width: 90%;
+  }
+
+  .msg.error {
+    align-self: flex-start;
+    background: var(--warn-bg);
+    color: var(--warn-text);
+    border-bottom-left-radius: 3px;
+  }
+
+  .typing {
+    align-self: flex-start;
+    display: flex;
+    gap: 4px;
+    padding: 0.65rem 0.9rem;
+    background: var(--sage-light);
+    border-radius: 10px;
+    border-bottom-left-radius: 3px;
+  }
+
+  .typing span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--sage-dark);
+    opacity: 0.5;
+    animation: bounce 1.2s infinite ease-in-out;
+  }
+
+  .typing span:nth-child(2) { animation-delay: 0.15s; }
+  .typing span:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
+    40% { transform: translateY(-3px); opacity: 1; }
+  }
+
+  .composer {
+    border-top: 1px solid var(--line);
+    padding: 0.85rem 1rem;
+    display: flex;
+    gap: 0.6rem;
+  }
+
+  .composer input {
+    flex: 1;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 0.6rem 0.75rem;
+    font-family: inherit;
+    font-size: 14.5px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .composer input:focus {
+    outline: none;
+    border-color: var(--sage);
+    box-shadow: 0 0 0 3px var(--sage-light);
+  }
+
+  .composer button {
+    border: none;
+    background: var(--coral);
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 0 1.1rem;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .composer button:hover { background: var(--coral-dark); }
+  .composer button:disabled { background: var(--ink-faint); cursor: not-allowed; }
+
+  .suggestions {
+    padding: 0 1.25rem 0.9rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .suggestion-chip {
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink-soft);
+    font-size: 12.5px;
+    padding: 0.35rem 0.7rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .suggestion-chip:hover {
+    border-color: var(--sage);
+    color: var(--sage-dark);
+  }
+
+  .footer-note {
+    text-align: center;
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-top: 1.5rem;
+    line-height: 1.6;
+  }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">Acme Corp · HR Self-Service</div>
+  <div class="topbar-tag">Powered by an n8n workflow + Claude</div>
+</div>
+
+<div class="layout">
+
+  <div class="panel gate-panel" id="gate-panel">
+    <p class="gate-eyebrow">Get started</p>
+    <h1 class="gate-title">What's your employee ID?</h1>
+    <p class="gate-sub">Enter an employee ID from 1001 to 1020 to try the assistant.</p>
+    <div class="gate-form">
+      <input type="text" id="gate-input" placeholder="e.g. 1001" autocomplete="off">
+      <button id="gate-button">Start</button>
+    </div>
+    <p class="gate-hint">Don't have an ID? <button id="random-id">Use a random one</button></p>
+  </div>
+
+  <div class="panel chat-panel hidden" id="chat-panel">
+    <div class="chat-header">
+      <div class="chat-header-dot"></div>
+      <div class="chat-header-text">HR Assistant</div>
+      <div class="chat-header-sub" id="switch-id">switch employee</div>
+    </div>
+
+    <div class="messages" id="messages"></div>
+
+    <div class="suggestions">
+      <button class="suggestion-chip" data-q="How many vacation days do I have left?">Vacation days left?</button>
+      <button class="suggestion-chip" data-q="How many sick days do I have?">Sick days?</button>
+      <button class="suggestion-chip" data-q="What's the remote work policy?">Remote work policy</button>
+      <button class="suggestion-chip" data-q="How much notice do I need to give if I resign?">Notice period</button>
+    </div>
+
+    <div class="composer">
+      <input type="text" id="message-input" placeholder="Ask a question…" autocomplete="off">
+      <button id="send-button">Send</button>
+    </div>
+  </div>
+
+</div>
+
+<p class="footer-note">
+  This demo calls a live n8n workflow that looks up a synthetic employee record and asks Claude to answer<br>
+  based only on that record and a small set of policy documents. No real employee data is used.
+</p>
+
+<script>
+  const WEBHOOK_URL = "https://ancatrif.app.n8n.cloud/webhook/60d209df-5076-4278-b0dc-cb4dcbcfc335";
+  const VALID_IDS = ["1001","1002","1003","1004","1005","1006","1007","1008","1009","1010",
+                      "1011","1012","1013","1014","1015","1016","1017","1018","1019","1020"];
+
+  let currentEmployeeId = null;
+
+  const gatePanel = document.getElementById('gate-panel');
+  const chatPanel = document.getElementById('chat-panel');
+  const gateInput = document.getElementById('gate-input');
+  const gateButton = document.getElementById('gate-button');
+  const randomIdButton = document.getElementById('random-id');
+  const switchIdButton = document.getElementById('switch-id');
+  const messages = document.getElementById('messages');
+  const input = document.getElementById('message-input');
+  const sendButton = document.getElementById('send-button');
+
+  function startChat(employeeId) {
+    currentEmployeeId = employeeId;
+    gatePanel.classList.add('hidden');
+    chatPanel.classList.remove('hidden');
+    messages.innerHTML = '';
+    addMessage(`You're chatting as employee ${employeeId}. Ask anything about vacation, sick leave, policies, or your record.`, 'system');
+    input.focus();
+  }
+
+  function endChat() {
+    chatPanel.classList.add('hidden');
+    gatePanel.classList.remove('hidden');
+    gateInput.value = '';
+    gateInput.focus();
+  }
+
+  gateButton.addEventListener('click', () => {
+    const id = gateInput.value.trim();
+    if (id) startChat(id);
+  });
+
+  gateInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && gateInput.value.trim()) startChat(gateInput.value.trim());
+  });
+
+  randomIdButton.addEventListener('click', () => {
+    const id = VALID_IDS[Math.floor(Math.random() * VALID_IDS.length)];
+    startChat(id);
+  });
+
+  switchIdButton.addEventListener('click', endChat);
+
+  function addMessage(text, type, meta) {
+    const div = document.createElement('div');
+    div.className = `msg ${type}`;
+    div.textContent = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+    return div;
+  }
+
+  function showTyping() {
+    const div = document.createElement('div');
+    div.className = 'typing';
+    div.id = 'typing-indicator';
+    div.innerHTML = '<span></span><span></span><span></span>';
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function hideTyping() {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+  }
+
+  async function sendMessage(text) {
+    addMessage(text, 'user');
+    input.value = '';
+    sendButton.disabled = true;
+    showTyping();
+
+    try {
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ employee_id: currentEmployeeId, message: text })
+      });
+
+      if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+
+      const data = await response.json();
+      hideTyping();
+      addMessage(data.reply || "No reply field returned — check the n8n response structure.", 'agent');
+    } catch (err) {
+      hideTyping();
+      addMessage(`Could not reach the agent. ${err.message}`, 'error');
+    } finally {
+      sendButton.disabled = false;
+    }
+  }
+
+  sendButton.addEventListener('click', () => {
+    const text = input.value.trim();
+    if (text) sendMessage(text);
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const text = input.value.trim();
+      if (text) sendMessage(text);
+    }
+  });
+
+  document.querySelectorAll('.suggestion-chip').forEach(chip => {
+    chip.addEventListener('click', () => sendMessage(chip.dataset.q));
+  });
+</script>
+
+</body>
+</html>
