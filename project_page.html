@@ -7,7 +7,7 @@
 <meta name="description" content="A proof-of-concept agentic workflow testing whether employees can get satisfactory HR answers from an AI agent, without HR needing to be in the loop.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Roboto+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
     --paper: #FAF8F4;
@@ -137,32 +137,44 @@
 
   section { margin-bottom: 0.5rem; }
 
+  section {
+    margin-bottom: 0.85rem;
+  }
+
   .section-toggle {
     width: 100%;
     text-align: left;
-    background: none;
-    border: none;
-    border-top: 1px solid var(--line);
-    padding: 1.25rem 0 1.25rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1.4rem 1.5rem;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-family: inherit;
+    transition: border-color 0.15s ease;
   }
 
-  .section-toggle:hover .section-title { color: var(--sage-dark); }
+  .section-toggle:hover { border-color: var(--sage); }
+
+  .section-toggle[aria-expanded="true"] {
+    background: #D8F0E3;
+    border-color: #A9DDC4;
+  }
 
   .section-title {
-    font-family: 'Source Serif 4', serif;
-    font-size: 19px;
+    font-family: 'Roboto Mono', 'SF Mono', Menlo, monospace;
+    font-size: 13.5px;
     font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     color: var(--ink);
   }
 
   .section-chevron {
     color: var(--ink-faint);
-    font-size: 14px;
+    font-size: 13px;
     transition: transform 0.2s ease;
     flex-shrink: 0;
     margin-left: 1rem;
@@ -171,9 +183,14 @@
   .section-toggle[aria-expanded="true"] .section-chevron { transform: rotate(180deg); }
 
   .section-body {
-    padding: 0 0 1.75rem;
+    padding: 1.25rem 1.5rem 1.5rem;
     font-size: 15.5px;
     color: var(--ink-soft);
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    margin-top: -0.85rem;
   }
 
   .section-body p { margin: 0 0 1rem; }
@@ -332,11 +349,11 @@
   </div>
 
   <section>
-    <button class="section-toggle" aria-expanded="true" data-target="problem">
-      <span class="section-title">The problem it tests</span>
+    <button class="section-toggle" aria-expanded="false" data-target="problem">
+      <span class="section-title">The problem it solves</span>
       <span class="section-chevron">▼</span>
     </button>
-    <div class="section-body" id="problem">
+    <div class="section-body hidden" id="problem">
       <p>HR teams spend a meaningful share of their week answering the same handful of questions — how many vacation days are left, where the handbook lives, what the remote work policy says. None of it is hard to answer. All of it is repetitive enough to keep HR reactive instead of strategic.</p>
       <p>The core assumption worth testing isn't whether AI <em>can</em> answer these questions — it's whether employees will actually accept the answer often enough that they don't immediately escalate to a human anyway. That's the only thing this PoC is built to find out. Everything else — polish, integration breadth, UI — is secondary until that's true.</p>
     </div>
@@ -344,12 +361,12 @@
 
   <section>
     <button class="section-toggle" aria-expanded="false" data-target="approach">
-      <span class="section-title">Why a throwaway PoC, not a product</span>
+      <span class="section-title">Design choices and tradeoffs</span>
       <span class="section-chevron">▼</span>
     </button>
     <div class="section-body hidden" id="approach">
       <p>The brief explicitly called for buying information, not building software. That shaped every decision: no authentication, no production HRIS integration, no polished UI at the backend stage. The fastest path to a real answer was to fake the hard parts and test the real part.</p>
-      <p>Concretely: a manually populated spreadsheet stands in for a live HRIS connection (Workday, BambooHR). Five policy documents get pasted directly into a system prompt instead of being chunked into a vector database. Both are deliberate corners cut — they would be wrong in production, but they're exactly right for a two-week test of whether the agent gives good answers.</p>
+      <p>Two deliberate omissions worth naming. A manually populated spreadsheet stands in for a live HRIS connection (Workday, BambooHR) — wiring up a real one would have taken weeks and told me nothing about whether the agent's answers are good. And five policy documents are pasted directly into the system prompt rather than chunked into a vector database, since five documents under 10k tokens don't need retrieval infrastructure yet. Both would be wrong choices in production, and both are exactly right for a two-week test.</p>
     </div>
   </section>
 
@@ -411,24 +428,6 @@
         <img src="n8n-canvas.png" alt="The live n8n workflow canvas, showing six connected nodes: Webhook, Get row(s) in sheet, Code in JavaScript, Message a model, Append row in sheet, and Respond to Webhook, all marked as successfully executed.">
         <div class="screenshot-caption">The actual n8n canvas. Logging and the webhook response both fire directly off the Claude node, in parallel.</div>
       </div>
-
-      <div class="screenshot-wrap">
-        <img src="sheets-lookup.png" alt="The Google Sheets lookup node configuration, showing a filter on employee_id matching the incoming value 1002, with the correct row for Marcus Webb returned in the output panel.">
-        <div class="screenshot-caption">The lookup step in detail — filtering the spreadsheet by employee_id from the incoming request, and returning the matching row.</div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <button class="section-toggle" aria-expanded="false" data-target="debugging">
-      <span class="section-title">A bug worth naming</span>
-      <span class="section-chevron">▼</span>
-    </button>
-    <div class="section-body hidden" id="debugging">
-      <p>The lookup step initially failed silently for every employee, even though the data was correct end to end. The cause: the incoming employee ID arrived as a string (<code class="bug-callout-inline">"1001"</code>), while Google Sheets returned it as a number (<code class="bug-callout-inline">1001</code>). A strict equality check between the two never matched.</p>
-      <div class="bug-callout">
-        The fix — wrapping both sides in <code>String()</code> before comparing — is a one-line change, but the failure mode is a good example of why a PoC is supposed to surface cheap mistakes early. The data looked correct everywhere it was inspected; the type mismatch was invisible until traced carefully.
-      </div>
     </div>
   </section>
 
@@ -470,8 +469,7 @@
       <span class="section-chevron">▼</span>
     </button>
     <div class="section-body hidden" id="reflection">
-      <p>Building this in n8n rather than from scratch in code surfaced a different kind of learning than I expected. The logic was never the hard part — what slowed things down was the gap between what a node's UI implies it does and what it actually expects as input. A filter field that won't accept manual text, an expression that silently fails to resolve, a response field that validates as JSON before it substitutes a value: each of these cost more time than the underlying idea ever would have.</p>
-      <p>The most useful habit turned out to be testing one node at a time rather than running the whole chain and guessing where it broke. That's not a new lesson, but it's a different muscle in a visual tool than in code, where you're used to reading a stack trace rather than clicking through a canvas.</p>
+      <p>Building this in n8n rather than from scratch in code surfaced a different kind of learning than I expected. The logic was never the hard part — the friction was almost always in the gap between what a node's interface implies it does and what it actually expects as input. That's a different debugging muscle than reading a stack trace: it means testing one node at a time and trusting the output panel over your assumptions about how a field should behave.</p>
     </div>
   </section>
 
@@ -486,10 +484,22 @@
         <table>
           <tr><td>Good at</td><td>Answering narrowly within the data it's given, and declining clearly when something falls outside that scope.</td></tr>
           <tr><td>Watch out for</td><td>The agent only knows what's in its system prompt. It has no way to verify the employee ID is real — that check has to happen before the model is ever called.</td></tr>
+          <tr><td>Safety</td><td>Refused over 98% of harmful requests in Anthropic's testing. Deployed at AI Safety Level 2.</td></tr>
           <tr><td>Your role</td><td>Every response in this PoC is logged for review, not auto-trusted. A human checks the log to see where the agent's answers are reliable and where they're not.</td></tr>
           <tr><td>Data</td><td>Inputs are synthetic and sent to the Anthropic API. No real employee data is used anywhere in this demo.</td></tr>
+          <tr><td>Full details</td><td><a href="https://www.anthropic.com/research/claude-4-system-card">Anthropic Claude 4 System Card</a></td></tr>
         </table>
       </div>
+    </div>
+  </section>
+
+  <section>
+    <button class="section-toggle" aria-expanded="false" data-target="credits">
+      <span class="section-title">Credits</span>
+      <span class="section-chevron">▼</span>
+    </button>
+    <div class="section-body hidden" id="credits">
+      <p>Built in n8n, an open-source workflow automation tool, connected to the Anthropic API. The data and policy documents are entirely synthetic, written for this demo and not drawn from any real company.</p>
     </div>
   </section>
 
